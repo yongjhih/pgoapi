@@ -58,7 +58,7 @@ class RpcApi:
     RPC_ID = 0
     START_TIME = 0
 
-    def __init__(self, auth_provider):
+    def __init__(self, auth_provider, signature=None):
 
         self.log = logging.getLogger(__name__)
 
@@ -67,6 +67,8 @@ class RpcApi:
         """ mystic unknown6 - revolved by PokemonGoDev """
         self._signature_gen = False
         self._signature_lib = None
+
+        self._saved_signature = signature
 
         if RpcApi.START_TIME == 0:
             RpcApi.START_TIME = get_time(ms=True)
@@ -194,7 +196,10 @@ class RpcApi:
             ticket_serialized = request.auth_info.SerializeToString() #Sig uses this when no auth_ticket available
 
         if self._signature_gen:
-            sig = Signature()
+            if self._saved_signature is not None:
+                sig = self._saved_signature
+            else:
+                sig = Signature()
 
             sig.location_hash1 = generateLocation1(ticket_serialized, request.latitude, request.longitude, request.altitude)
             sig.location_hash2 = generateLocation2(request.latitude, request.longitude, request.altitude)
@@ -210,7 +215,7 @@ class RpcApi:
             signature_proto = sig.SerializeToString()
 
             #u6 = request.unknown6.add()
-            
+
             u6 = request.unknown6
             u6.request_type = 6
             u6.unknown2.encrypted_signature = self._generate_signature(signature_proto)

@@ -207,7 +207,7 @@ class PGoApiRequest:
 
         self._req_method_list = []
 
-    def call(self):
+    def call(self, signature=None):
         if not self._req_method_list:
             raise EmptySubrequestChainException()
 
@@ -218,7 +218,7 @@ class PGoApiRequest:
             self.log.info('Not logged in')
             raise NotLoggedInException()
 
-        request = RpcApi(self._auth_provider)
+        request = RpcApi(self._auth_provider,signature)
         request._session = self.__parent__._session
 
         lib_path = self.__parent__.get_signature_lib()
